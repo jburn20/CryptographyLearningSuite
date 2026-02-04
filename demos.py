@@ -1,6 +1,6 @@
 import time, string, shutil, re, os, sys, random
 from utils import UP, RED, RESET, GREEN, YELLOW, GREY, FAST_CLEAR, FAST, get_terminal_width, center_text, clear_screen, ANSI_ESCAPE
-
+from collections import OrderedDict
 demo_registry = {}
 def register_demo(name):
     def decorator(func):
