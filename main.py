@@ -517,39 +517,39 @@ def dev_test_prize_system():
     
     input("\nPress Enter to continue...")
     
-
-try:
-    menu_text = "Welcome to a Cryptography learning game. Enter [1] to test your decryption skills, [2] for demos, or [3] for cipher tester, [4] for quiz"
-    if DEV_MODE:
-        menu_text += ", or [9] for dev tests"
-    menu_text += ".\n"
-    
-    userMode = int(input(menu_text))
-    if userMode == 1:
-        # Interactive difficulty selection with point bounties
-        print("Challenge mode: Choose your difficulty and earn points!")
-        run_level_progression()
-    elif userMode == 2:
-        while True:
-            run_demos()
-    elif userMode == 3:
-        while True:
-            run_cipher_tester()
-            back = input("\nTest another? [Y/n]: ").strip().lower()
-            if back in ("n", "no"):
-                break
-    elif userMode == 4:
-        # QUIZ ABOUT CIPHERS
-        quiz_menu()
-    elif userMode == 9 and DEV_MODE:
-        dev_test_prize_system() # This now tests the storefront
-    else:
-        if userMode == 9 and not DEV_MODE:
-            print("Dev mode is disabled. Set DEV_MODE = True in main.py to enable.")
+if __name__ == "__main__":
+    try:
+        menu_text = "Welcome to a Cryptography learning game. Enter [1] to test your decryption skills, [2] for demos, or [3] for cipher tester, [4] for quiz"
+        if DEV_MODE:
+            menu_text += ", or [9] for dev tests"
+        menu_text += ".\n"
+        
+        userMode = int(input(menu_text))
+        if userMode == 1:
+            # Interactive difficulty selection with point bounties
+            print("Challenge mode: Choose your difficulty and earn points!")
+            run_level_progression()
+        elif userMode == 2:
+            while True:
+                run_demos()
+        elif userMode == 3:
+            while True:
+                run_cipher_tester()
+                back = input("\nTest another? [Y/n]: ").strip().lower()
+                if back in ("n", "no"):
+                    break
+        elif userMode == 4:
+            # QUIZ ABOUT CIPHERS
+            quiz_menu()
+        elif userMode == 9 and DEV_MODE:
+            dev_test_prize_system() # This now tests the storefront
         else:
-            print("Invalid mode selected.")
-            
-    # TODO: Iterate with this format
-    
-except KeyboardInterrupt:
-    print("\nQuitting game, goodbye.")
+            if userMode == 9 and not DEV_MODE:
+                print("Dev mode is disabled. Set DEV_MODE = True in main.py to enable.")
+            else:
+                print("Invalid mode selected.")
+                
+        # TODO: Iterate with this format
+        
+    except KeyboardInterrupt:
+        print("\nQuitting game, goodbye.")

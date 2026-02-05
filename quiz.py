@@ -861,6 +861,47 @@ def validate_quiz_data():
     
     return errors
 
+# ============================================================================
+# TESTING & VALIDATION
+# ============================================================================
+
+def validate_quiz_data():
+    """
+    Validates the quiz question database for common errors
+    Returns list of errors found
+    """
+    errors = []
+    
+    for cipher, questions in QUIZ_QUESTIONS.items():
+        for i, q in enumerate(questions, 1):
+            q_id = f"{cipher} Q{i}"
+            
+            # Check required fields
+            if 'question' not in q:
+                errors.append(f"{q_id}: Missing 'question' field")
+            if 'options' not in q:
+                errors.append(f"{q_id}: Missing 'options' field")
+            if 'correct' not in q:
+                errors.append(f"{q_id}: Missing 'correct' field")
+            if 'explanation' not in q:
+                errors.append(f"{q_id}: Missing 'explanation' field")
+            
+            # Check options format
+            if 'options' in q:
+                if len(q['options']) != 4:
+                    errors.append(f"{q_id}: Should have exactly 4 options, has {len(q['options'])}")
+                
+                for opt in q['options']:
+                    if not opt.startswith(('A)', 'B)', 'C)', 'D)')):
+                        errors.append(f"{q_id}: Option doesn't start with A), B), C), or D): {opt}")
+            
+            # Check correct answer
+            if 'correct' in q:
+                if q['correct'] not in ['A', 'B', 'C', 'D']:
+                    errors.append(f"{q_id}: Correct answer must be A, B, C, or D, got {q['correct']}")
+    
+    return errors
+
 def run_quiz_tests():
     """Run validation tests on quiz data"""
     clear_screen()
