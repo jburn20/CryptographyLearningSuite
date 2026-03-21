@@ -466,32 +466,20 @@ def run_cipher_tester():
     print("Cipher:", ciphertext)
 
 def run_demos():
-    while True:
-        print("\nAvailable Demos:")
-        for i, name in enumerate(demo_registry.keys(), 1):
-            print(f"[{i}] {name}")
-        print("[0] Quit")
+        # Replace the print loop + input with:
+    demo_names = list(demo_registry.keys())
+    demo_names.append("Quit")
 
-        choice = input("Select a demo: ").strip()
-        if choice == "0":
-            print("Quitting game, goodbye.")
-            sys.exit()
+    choice = inquirer.select(
+        message="Select a demo:",
+        choices=demo_names,
+    ).execute()
 
-        try:
-            choice = int(choice)
-            demo_name = list(demo_registry.keys())[choice - 1]
-            print(f"\n--- Running {demo_name} ---\n")
+    if choice == "Quit":
+        print("Quitting game, goodbye.")
+        sys.exit()
 
-            try:
-                demo_registry[demo_name]()  # Run the selected demo
-            except Exception as e:
-                print(f"Error while running {demo_name}: {e}")
-
-            print("\n--- Demo finished ---\n")
-
-        except (ValueError, IndexError):
-            print("Invalid choice, please try again.")
-
+    demo_registry[choice]()
 def run_demo(file_name):
     # Execute the demo file
     path = os.path.join('demos', file_name)
