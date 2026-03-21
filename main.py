@@ -8,6 +8,8 @@ from ciphers import generate_round, choose_difficulty_for_level, CIPHERS, genera
 # Import the new helper functions and GREY color
 from utils import GREEN, YELLOW, RED, GREY, RESET, clear_screen, center_text, get_terminal_width
 from quiz import quiz_menu
+from InquirerPy import inquirer
+
 
 # --- Dev toggles ---
 DEV_SHOW_CIPHER = False  # Show cipher names during gameplay
@@ -23,7 +25,7 @@ def build_storefront_items():
     Defaults all .json files to 1 point.
     Applies manual prices from the MANUAL_PRICES dict.
     """
-    
+
     # ?---
     # !--- EDIT THIS DICTIONARY TO MANUALLY SET 3 OR 5 POINT PRICES ---
     # ?---
@@ -57,7 +59,7 @@ def build_storefront_items():
     store_items = {}
     item_key = 1  # Start item numbering at 1
     prizes_dir = 'prizes'
-    
+
     # *Ensure prizes directory exists
     if not os.path.exists(prizes_dir):
         return {} # Return empty store if no prize folder
@@ -67,11 +69,11 @@ def build_storefront_items():
         all_files = sorted(os.listdir(prizes_dir))
     except FileNotFoundError:
         return {} # Again, return empty if path is invalid
-        
+
     for filename in all_files:
         if filename.endswith('.json'):
             file_path = os.path.join(prizes_dir, filename).replace("\\", "/") # Normalize path
-            
+
             # ONLY add as a 1-point item if it's NOT in the manual list
             if file_path not in MANUAL_PRICES:
                 store_items[str(item_key)] = {
@@ -80,7 +82,7 @@ def build_storefront_items():
                     'file': file_path
                 }
                 item_key += 1
-                
+
     # !--- Step 2: Add all manually-priced items ---
     # *This loop ensures they are added *after* the defaults, with correct keys
     for file_path, cost in sorted(MANUAL_PRICES.items()):
@@ -121,13 +123,13 @@ def smart_word_picker(cipher_name):
     with open(os.path.join(os.path.dirname(__file__), "wordlist.txt"), "r") as f:
         raw = [line.rstrip("\n") for line in f if line.strip()]
     words = [w for w in (_clean_word(x) for x in raw) if w]
-    
+
     # *Categorize words by length
     word_lengths = [len(word.split()) for word in words]
     short_words = [w for w in words if len(w.split()) <= 3]
     medium_words = [w for w in words if 3 < len(w.split()) <= 4]
     long_words = [w for w in words if len(w.split()) > 4]
-    
+
     # !Select based on cipher type
     if cipher_name in ["Columnar", "Affine", "Monoalphabetic Substitution Cipher"]:
         # *Hard ciphers - prefer longer phrases for better patterns
@@ -149,7 +151,7 @@ def run_storefront(total_score):
     Allows the user to spend 'total_score' as currency to buy animations.
     """
     current_score = total_score
-    
+
     # !--- MODIFIED: Build store items dynamically ---
     STORE_ITEMS = build_storefront_items()
     if not STORE_ITEMS:
@@ -158,7 +160,7 @@ def run_storefront(total_score):
         return
 
     # *Sort items by cost for display
-    sorted_items = sorted(STORE_ITEMS.items(), key=lambda item: int(item[0]))    
+    sorted_items = sorted(STORE_ITEMS.items(), key=lambda item: int(item[0]))
     print(sorted_items)
     watched = []
     while True:
@@ -185,23 +187,23 @@ def run_storefront(total_score):
                 color = YELLOW
             else:
                 color = RED
-            
+
             # *Override color if unaffordable
             if current_score < cost:
                 color = GREY
-            if name in watched: 
+            if name in watched:
                 color = GREY
-                
+
             display_text = f"{color}[{key}] {name} ({cost} pt){RESET}"
             print("    " + display_text) # Indent for clarity
-        
+
         # --- Handle User Input (FIXED Centering) ---
         print("\n" * 2)
-        
+
         # Print the prompt centered on its own line
         prompt_text = "Enter an item number to buy, or [Q] to quit:"
         print(prompt_text)
-        
+
         # Center the input cursor/prompt on the next line
         cursor_prompt = "> "
         choice = input(cursor_prompt).strip().lower()
@@ -219,14 +221,14 @@ def run_storefront(total_score):
                 print(center_text(f"Purchased a ticket for {item['name']} at {item['cost']} point(s)!"))
                 print(center_text(f"You have {current_score} points remaining."))
                 input(center_text("\nPress Enter to watch your animation..."))
-                
+
                 # Run the prize animation
                 try:
                     subprocess.run([sys.executable, "prize.py", item['file']])
                 except Exception as e:
                     print(center_text(f"[!] Could not run prize animation: {e}"))
                     input(center_text("Press Enter to continue..."))
-            
+
             else:
                 # Not enough points
                 print(center_text(f"{RED}Not enough points!{RESET} You need {item['cost']} but only have {current_score}."))
@@ -244,11 +246,11 @@ def run_storefront(total_score):
 def run_level_progression(seed=None):
     if seed is not None:
         random.seed(seed)
-    
+
     total_score = 0
     rounds_played = 0
     recent = []
-    
+
     while True:  # Main game loop - user chooses when to quit
         # Show current stats and difficulty selection
         clear_screen()
@@ -260,14 +262,14 @@ def run_level_progression(seed=None):
         print(center_text("=" * 50))
         print("\nChoose your difficulty:")
         print(f"[1] Easy   - 3 points")
-        print(f"[2] Hard   - 5 points") 
+        print(f"[2] Hard   - 5 points")
         print(f"[0] Quit Game")
         if DEV_MODE:
             print(f"[D] Dev: Add points")
         print("=" * 50)
-        
+
         choice = input("Select difficulty: ").strip()
-        
+
         # Dev command: add points directly
         if DEV_MODE and choice.lower() == 'd':
             try:
@@ -282,7 +284,7 @@ def run_level_progression(seed=None):
                 print("[DEV] Invalid input, cancelled")
                 input("Press Enter to continue...")
                 continue
-        
+
         if choice == "0":
             clear_screen()
             # !--- Corrected Centered Headers ---
@@ -292,29 +294,29 @@ def run_level_progression(seed=None):
             print(center_text(f"Final Score:      {total_score}"))
             print(center_text(f"Rounds Played:    {rounds_played}"))
             print(center_text("=" * 60))
-            
+
             # !--- Call the Storefront ---
             print("\n" + center_text("You can now spend your points at the Theater!"))
             input(center_text("Press Enter to continue..."))
-            
+
             # This function will now handle the entire post-game loop
             run_storefront(total_score)
-            
+
             # --- End of new logic ---
-            
+
             print("\nThanks for playing!")
             break # This exits the main game
-            
+
         # Map choice to difficulty
         difficulty_map = {"1": "easy", "2": "hard"}
         if choice not in difficulty_map:
             print("Invalid choice! Please try again.")
             input("Press Enter to continue...")
             continue
-            
+
         difficulty = difficulty_map[choice]
         base_points = 3 if difficulty == "easy" else 5
-        
+
         # Generate round
         word = random_picker()
         rnd = generate_round(word, difficulty, recent)
@@ -323,7 +325,7 @@ def run_level_progression(seed=None):
         current_cipher_name = rnd['name']
         points = base_points
         hint_tier = 0  # 0=none, 1=type only, 2=type+params
-        
+
         # Play the round
         while True:
             diff_col = _diff_color(difficulty)
@@ -385,14 +387,14 @@ def run_level_progression(seed=None):
                     points = 2 # Set points to 1 for the last chance
                     print("Incorrect! You have one more chance...")
                     time.sleep(0.75)
-                
+
                 # ! This was their FINAL mistake 1
                 else:
                     print(f"\nIncorrect! The correct answer was: {GREEN}{rnd['plaintext']}{RESET}")
                     print("You get 1 point for trying.")
                     total_score += 1 # Give the consolation point
                     rounds_played += 1
-                    break 
+                    break
 
         recent.append(current_cipher_name)
         input("\nPress Enter to continue...")
@@ -442,7 +444,7 @@ def run_cipher_tester():
         print("Invalid choice.")
         return
     meta = CIPHERS[name]
-    
+
     # !Ask if user wants to use smart word picker or enter their own
     use_smart = input("Use smart word picker for this cipher? [Y/n]: ").strip().lower()
     if use_smart in ("", "y", "yes"):
@@ -450,7 +452,7 @@ def run_cipher_tester():
         print(f"Selected phrase: {plaintext}")
     else:
         plaintext = input("Enter plaintext (letters and spaces): ").rstrip("\n")
-    
+
     auto = input("Auto-generate parameters? [Y/n]: ").strip().lower()
     if auto in ("", "y", "yes"):
         params = meta["params"]()
@@ -506,7 +508,7 @@ def dev_test_prize_system():
     print(center_text("=" * 60))
     print()
     print("Test the storefront with a custom point value.\n")
-    
+
     try:
         score = int(input("Enter points to test store with: ") or "10")
         print(f"\nLoading storefront with {score} points...")
@@ -514,42 +516,45 @@ def dev_test_prize_system():
         run_storefront(score) # Call the storefront directly
     except ValueError:
         print("Invalid input")
-    
+
     input("\nPress Enter to continue...")
-    
 if __name__ == "__main__":
     try:
-        menu_text = "Welcome to a Cryptography learning game. Enter [1] to test your decryption skills, [2] for demos, or [3] for cipher tester, [4] for quiz"
+        choices = [
+            "Challenge Mode  — test your decryption skills",
+            "Learning Demos  — watch cipher walkthroughs",
+            "Cipher Tester   — sandbox any cipher",
+            "Quiz            — test your cipher knowledge",
+        ]
+
         if DEV_MODE:
-            menu_text += ", or [9] for dev tests"
-        menu_text += ".\n"
-        
-        userMode = int(input(menu_text))
-        if userMode == 1:
-            # Interactive difficulty selection with point bounties
+            choices.append("Dev Tests       — storefront / prize testing")
+
+        selection = inquirer.select(
+            message="Welcome to the Cryptography Learning Suite — choose a mode:",
+            choices=choices,
+        ).execute()
+
+        if "Challenge" in selection:
             print("Challenge mode: Choose your difficulty and earn points!")
             run_level_progression()
-        elif userMode == 2:
+
+        elif "Demos" in selection:
             while True:
                 run_demos()
-        elif userMode == 3:
+
+        elif "Tester" in selection:
             while True:
                 run_cipher_tester()
                 back = input("\nTest another? [Y/n]: ").strip().lower()
                 if back in ("n", "no"):
                     break
-        elif userMode == 4:
-            # QUIZ ABOUT CIPHERS
+
+        elif "Quiz" in selection:
             quiz_menu()
-        elif userMode == 9 and DEV_MODE:
-            dev_test_prize_system() # This now tests the storefront
-        else:
-            if userMode == 9 and not DEV_MODE:
-                print("Dev mode is disabled. Set DEV_MODE = True in main.py to enable.")
-            else:
-                print("Invalid mode selected.")
-                
-        # TODO: Iterate with this format
-        
+
+        elif "Dev" in selection and DEV_MODE:
+            dev_test_prize_system()
+
     except KeyboardInterrupt:
         print("\nQuitting game, goodbye.")
