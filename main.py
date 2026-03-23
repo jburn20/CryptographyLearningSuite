@@ -145,104 +145,79 @@ def smart_word_picker(cipher_name):
 
 
 # !--- Storefront Function ---
-def run_storefront(total_score):
-    """
-    Displays the post-game storefront UI.
-    Allows the user to spend 'total_score' as currency to buy animations.
-    """
-    current_score = total_score
 
-    # !--- MODIFIED: Build store items dynamically ---
+def run_storefront(total_score):
+    current_score = total_score
     STORE_ITEMS = build_storefront_items()
+
     if not STORE_ITEMS:
         print(center_text(f"{RED}No items found in 'prizes' directory!{RESET}"))
         input(center_text("Press Enter to continue..."))
         return
 
-    # *Sort items by cost for display
     sorted_items = sorted(STORE_ITEMS.items(), key=lambda item: int(item[0]))
-    print(sorted_items)
     watched = []
+
     while True:
         clear_screen()
-        # --- Corrected Centered Headers ---
         print(center_text("=" * 60))
         print(center_text("THEATER"))
         print(center_text("=" * 60))
         print(center_text(f"Your Points: {YELLOW}{current_score}{RESET}"))
-        print("\n")
-        # !--- New Color Key ---
-        print(center_text(f"Cost Key: {GREEN}1 Point{RESET} | {YELLOW}3 Points{RESET} | {RED}5 Points{RESET}"))
-        print(center_text("-" * 45))
-        print("\nAvailable Animations:\n")
+        print(center_text(f"Cost Key: {GREEN}1 pt{RESET} | {YELLOW}3 pts{RESET} | {RED}5 pts{RESET}"))
+        print()
 
-        # *--- New Single-Column List ---
+        # Build choices for fuzzy list
+        choices = []
         for key, item in sorted_items:
             cost = item['cost']
             name = item['name']
-            # *Determine color by cost
-            if cost == 1:
-                color = GREEN
-            elif cost == 3:
-                color = YELLOW
-            else:
-                color = RED
+            affordable = current_score >= cost
+            seen = name in watched
 
-            # *Override color if unaffordable
-            if current_score < cost:
-                color = GREY
-            if name in watched:
-                color = GREY
+            if cost == 1:   label_cost = f"[1pt]"
+            elif cost == 3: label_cost = f"[3pt]"
+            else:           label_cost = f"[5pt]"
 
-            display_text = f"{color}[{key}] {name} ({cost} pt){RESET}"
-            print("    " + display_text) # Indent for clarity
+            status = " ✓" if seen else ""
+            disabled = not affordable
 
-        # --- Handle User Input (FIXED Centering) ---
-        print("\n" * 2)
+            choices.append({
+                "name": f"{label_cost} {name}{status}",
+                "value": key,
+                "disabled": "Can't afford" if disabled else False,
+            })
 
-        # Print the prompt centered on its own line
-        prompt_text = "Enter an item number to buy, or [Q] to quit:"
-        print(prompt_text)
+        choices.append({"name": "─── Leave Theater ───", "value": "q"})
 
-        # Center the input cursor/prompt on the next line
-        cursor_prompt = "> "
-        choice = input(cursor_prompt).strip().lower()
+        selection = inquirer.fuzzy(
+            message="Search or scroll to pick an animation:",
+            choices=choices,
+            max_height="60%",
+        ).execute()
 
-        if choice == 'q':
-            break # Exit the storefront loop
+        if selection == "q":
+            break
 
-        if choice in STORE_ITEMS:
-            item = STORE_ITEMS[choice]
-            if current_score >= item['cost']:
-                watched.append(item['name'])
-                # Purchase successful
-                current_score -= item['cost']
-                clear_screen()
-                print(center_text(f"Purchased a ticket for {item['name']} at {item['cost']} point(s)!"))
-                print(center_text(f"You have {current_score} points remaining."))
-                input(center_text("\nPress Enter to watch your animation..."))
-
-                # Run the prize animation
-                try:
-                    subprocess.run([sys.executable, "prize.py", item['file']])
-                except Exception as e:
-                    print(center_text(f"[!] Could not run prize animation: {e}"))
-                    input(center_text("Press Enter to continue..."))
-
-            else:
-                # Not enough points
-                print(center_text(f"{RED}Not enough points!{RESET} You need {item['cost']} but only have {current_score}."))
-                time.sleep(2)
+        item = STORE_ITEMS[selection]
+        if current_score >= item['cost']:
+            watched.append(item['name'])
+            current_score -= item['cost']
+            clear_screen()
+            print(center_text(f"Purchased {item['name']} for {item['cost']} pt(s)!"))
+            print(center_text(f"Points remaining: {current_score}"))
+            input(center_text("\nPress Enter to watch..."))
+            try:
+                subprocess.run([sys.executable, "prize.py", item['file']])
+            except Exception as e:
+                print(center_text(f"[!] Could not run animation: {e}"))
+            input(center_text("Press Enter to continue..."))
         else:
-            # Invalid choice
-            print(center_text(f"{RED}Invalid selection.{RESET} Please enter a number or 'Q'."))
+            print(center_text(f"{RED}Not enough points!{RESET}"))
             time.sleep(1.5)
 
     clear_screen()
     print(center_text("Thanks for visiting the theater!"))
-# !--- End of Storefront Function ---
-
-
 def run_level_progression(seed=None):
     if seed is not None:
         random.seed(seed)
@@ -260,15 +235,59 @@ def run_level_progression(seed=None):
         print(center_text(f"Current Score: {total_score}"))
         print(center_text(f"Rounds Played: {rounds_played}"))
         print(center_text("=" * 50))
-        print("\nChoose your difficulty:")
-        print(f"[1] Easy   - 3 points")
-        print(f"[2] Hard   - 5 points")
-        print(f"[0] Quit Game")
-        if DEV_MODE:
-            print(f"[D] Dev: Add points")
-        print("=" * 50)
+        difficulty_choice = inquirer.select(
+        message="Choose your difficulty:",
+        choices=[
+            "Easy  — 3 points",
+            "Hard  — 5 points",
+            "Quit Game",
+        ],
+        ).execute()
 
-        choice = input("Select difficulty: ").strip()
+        if "Quit" in difficulty_choice:
+            choice = "0"
+        elif "Easy" in difficulty_choice:
+            choice = "1"
+        else:
+            choice = "2"
+
+        # Dev command: add points directly
+        if DEV_MODE and choice.lower() == 'd':
+            try:
+                points = int(input("Enter points to add: "))
+                rounds = int(input("Enter rounds to add (optional, default 0): ") or 0)
+                total_score += points
+                rounds_played += rounds
+                print(f"\n[DEV] Added {points} points and {rounds} rounds")
+                input("Press Enter to continue...")
+                continue
+            except ValueError:
+                print("[DEV] Invalid input, cancelled")
+                input("Press Enter to continue...")
+                continue
+
+        if choice == "0":
+            clear_screen()
+            # !--- Corrected Centered Headers ---
+            print(center_text("=" * 60))
+            print(center_text("GAME COMPLETE"))
+            print(center_text("=" * 60))
+            print(center_text(f"Final Score:      {total_score}"))
+            print(center_text(f"Rounds Played:    {rounds_played}"))
+            print(center_text("=" * 60))
+
+            # !--- Call the Storefront ---
+            print("\n" + center_text("You can now spend your points at the Theater!"))
+            input(center_text("Press Enter to continue..."))
+
+            # This function will now handle the entire post-game loop
+            run_storefront(total_score)
+
+            # --- End of new logic ---
+
+            print("\nThanks for playing!")
+            break # This exits the main game
+
 
         # Dev command: add points directly
         if DEV_MODE and choice.lower() == 'd':

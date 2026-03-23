@@ -1,4 +1,4 @@
-# C.I.P.H.E.R. Project: Cryptography Learning Suite  
+# C.I.P.H.E.R. Project: Cryptography Learning Suite
 A Cryptography Training Solution
 
 ## About
@@ -44,14 +44,22 @@ A sandbox mode that lets you experiment with any of the implemented ciphers. You
 * Manually set the cipher parameters (like a key or shift) or have them auto-generated.
 * Instantly see the resulting plaintext, parameters, and ciphertext.
 
-## How to Run
+## Installation
 
-1.  Ensure you have Python installed.
-2.  Run the main file from your terminal:
-    ```bash
-    python main.py
-    ```
-3.  From the main menu, select an option:
-    * **[1]** to play the Challenge Mode.
-    * **[2]** to watch the Learning Demos.
-    * **[3]** to use the Cipher Tester.
+This project requires several external libraries for its interactive terminal interface, including `inquirerpy` and `prompt_toolkit`. You can install these dependencies using the Python package manager, `pip`:
+
+```bash
+pip install -r requirements.txt
+```
+If you are having still having trouble after installing with pip, try installing the packages to a venv:
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+If you cannot get packages to work correctly, you can always download a version with no external dependencies:
+```bash
+git clone https://github.com/jburn20/cryptographylearningsuite.git
+cd cryptographylearningsuite
+git checkout 5e00d122002075183d15f8163a726a8ae06bf05a
+```
