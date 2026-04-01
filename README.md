@@ -4,7 +4,6 @@ A Cryptography Training Solution
 ## About
 
 This project is an interactive, terminal-based application designed to teach cryptography concepts. It combines a "Challenge Mode" to test your decryption skills with a library of visual, step-by-step "Learning Demos" that explain how different ciphers work.
-![](prizes/cryptographygif.mp4)
 
 ## Main Features
 
@@ -16,10 +15,17 @@ Test your skills by decrypting messages and earning points.
 * **Solve the Puzzle:** You are given a `ciphertext` and must find the original plaintext.
 * **Use Hints:** If you're stuck, you can spend points to get hints, such as revealing the cipher's type or its specific parameters (e.g., the shift value or key).
 * **Regenerate:** You can also spend 1 point to "regenerate" the puzzle, which keeps the same cipher but gives you a new word to decrypt.
-* **Earn Points:** Correct answers award points. After the game, you can spend your `total_score` in the Theater.
+* **Earn Points:** Correct answers award points. Af
+
+
+ter the game, you can spend your `total_score` in the Theater.
 * **The Theater:** A post-game storefront where you can spend your earned points to purchase and watch various prize animations.
 
 ### 2. Learning Demos
+
+https://github.com/user-attachments/assets/8e9ff9f7-0feb-4a47-8726-2ecc575b9852
+
+
 
 Access a library of visual, animated demonstrations to learn how ciphers operate. These demos run in your terminal and provide a step-by-step breakdown of the encryption process.
 
