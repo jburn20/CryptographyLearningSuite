@@ -4,6 +4,7 @@ A Cryptography Training Solution
 ## About
 
 This project is an interactive, terminal-based application designed to teach cryptography concepts. It combines a "Challenge Mode" to test your decryption skills with a library of visual, step-by-step "Learning Demos" that explain how different ciphers work.
+![](prizes/cryptographygif.mp4)
 
 ## Main Features
 

@@ -175,9 +175,9 @@ def run_storefront(total_score):
             affordable = current_score >= cost
             seen = name in watched
 
-            if cost == 1:   label_cost = f"[1pt]"
-            elif cost == 3: label_cost = f"[3pt]"
-            else:           label_cost = f"[5pt]"
+            if cost == 1:   label_cost = "[1pt]"
+            elif cost == 3: label_cost = "[3pt]"
+            else:           label_cost = "[5pt]"
 
             status = " ✓" if seen else ""
             disabled = not affordable
@@ -189,7 +189,6 @@ def run_storefront(total_score):
             })
 
         choices.append({"name": "─── Leave Theater ───", "value": "q"})
-
         selection = inquirer.fuzzy(
             message="Search or scroll to pick an animation:",
             choices=choices,
